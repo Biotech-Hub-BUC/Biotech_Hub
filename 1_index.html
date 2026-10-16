@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protein Structure, Function, and PTMs - Interactive Quiz</title>
+<style>
+*{box-sizing:border-box;font-family: \'Segoe UI\', Arial, sans-serif;}
+body{background:#f0f9ff;margin:0;padding:20px;display:flex;justify-content:center;}
+.container{max-width:800px;width:100%;background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1);overflow:hidden;}
+.header{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:white;padding:25px;text-align:center;}
+.header h1{margin:0;font-size:22px;}
+.header p{margin:8px 0 0;opacity:0.9;font-size:14px;}
+.progress-bar{height:8px;background:#e5e7eb;}
+.progress{height:100%;background:#22c55e;width:0%;transition:0.4s;}
+.quiz-body{padding:25px;}
+.question-card{display:none;}
+.question-card.active{display:block;animation: fadeIn 0.3s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)}}
+.q-title{font-size:18px;font-weight:700;color:#1e293b;margin-bottom:6px;}
+.q-meta{font-size:12px;color:#64748b;margin-bottom:15px;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{padding:14px 16px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;background:#f8fafc;transition:0.2s;font-size:14px;text-align:left;width:100%;}
+.option:hover{border-color:#94a3b8;background:#f1f5f9;}
+.option.correct{background:#dcfce7 !important;border-color:#22c55e !important;color:#14532d;font-weight:600;}
+.option.wrong{background:#fee2e2 !important;border-color:#ef4444 !important;color:#7f1d1d;font-weight:600;}
+.option:disabled{cursor:not-allowed;opacity:0.9;}
+.explanation{display:none;margin-top:15px;padding:14px;border-radius:10px;font-size:13px;line-height:1.5;}
+.explanation.show{display:block;}
+.explanation.correct-exp{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.explanation.wrong-exp{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+.next-btn{margin-top:18px;background:#2563eb;color:white;border:none;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:600;display:none;width:100%;}
+.next-btn:hover{background:#1d4ed8;}
+.score-box{text-align:center;padding:30px;display:none;}
+.score-circle{width:120px;height:120px;border-radius:50%;background:#dcfce7;color:#166534;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;margin:0 auto 15px;border:4px solid #22c55e;}
+.btn-restart{background:#0ea5e9;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:15px;}
+.footer{text-align:center;padding:12px;font-size:12px;color:#94a3b8;background:#f8fafc;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Protein Structure, Function, and Post-Translational Modifications</h1>
+    <p>20 MCQs | Interactive Quiz - Green for Correct, Red for Wrong</p>
+    <p style="font-size:12px;margin-top:4px;">Pharmacy Undergraduate Lecture - Lecture 3</p>
+  </div>
+  <div class="progress-bar"><div class="progress" id="progress"></div></div>
+  <div class="quiz-body" id="quizBody"></div>
+  <div class="score-box" id="scoreBox"></div>
+  <div class="footer">Tip: Green light = Correct | Red light = Wrong | Explanation appears instantly</div>
+</div>
+<script>
+const questions = [
+  { q: "1. Which level of protein structure describes the overall three-dimensional fold of a single polypeptide chain?", options: ["Primary structure", "Secondary structure", "Tertiary structure", "Quaternary structure"], answer: 2, exp: "Correct! Tertiary structure represents the overall 3D fold of a single polypeptide chain, creating active functional and drug-binding pockets." },
+  { q: "2. Which type of chemical bond directly connects successive amino-acid residues to form the main protein backbone?", options: ["Hydrogen bond", "Disulfide bond", "Peptide bond", "Salt bridge"], answer: 2, exp: "Correct! Peptide bonds are strong covalent bonds formed by a condensation reaction between a carboxyl group and an amino group." },
+  { q: "3. Backbone C=O and N-H hydrogen bonds are primarily responsible for stabilizing which levels of protein structure?", options: ["Primary structure", "Secondary structure (α-helices and β-sheets)", "Tertiary hydrophobic core", "Quaternary subunit interfaces"], answer: 1, exp: "Correct! Secondary structures such as α-helices and β-sheets are stabilized by backbone C=O···H-N hydrogen bonds." },
+  { q: "4. What is the typical structural consequence of having a Proline (Pro) residue inside an α-helix?", options: ["It stabilizes the helical coil", "It forms extra disulfide bonds", "It can kink or break the helix", "It acts as a universal phosphorylation site"], answer: 2, exp: "Correct! Proline\'s rigid ring structure and lack of a backbone amide hydrogen for bonding can kink or disrupt α-helices." },
+  { q: "5. In soluble globular proteins, where are nonpolar amino acid side chains (like Val, Leu, Ile) predominantly buried?", options: ["On the outer polar surface facing water", "Inside the hydrophobic core", "In the active site regulatory loop", "Exposed along the β-sheet edges"], answer: 1, exp: "Correct! Nonpolar side chains tend to cluster in the interior to form a hydrophobic core, stabilizing the soluble protein fold." },
+  { q: "6. Which covalent linkage is formed via the oxidation of two cysteine thiol (-SH) groups?", options: ["Peptide bond", "Disulfide bond", "Ester bond", "Glycosidic bond"], answer: 1, exp: "Correct! Oxidation of two cysteine side chains creates a covalent disulfide bond (R-S-S-R) that stabilizes protein folds or links chains." },
+  { q: "7. How do enzymes affect the thermodynamic equilibrium of a chemical reaction?", options: ["They shift equilibrium toward products", "They shift equilibrium toward reactants", "They increase the activation energy barrier", "They do not change the equilibrium position"], answer: 3, exp: "Correct! Enzymes accelerate reaction rates by lowering activation energy, but they do not alter the overall thermodynamic equilibrium." },
+  { q: "8. What is the functional definition of allosteric regulation?", options: ["Binding of a regulator at a site separate from the active site to alter protein function", "Permanent covalent degradation of the protein backbone", "Competitive blocking of the active substrate site", "Unfolding of the tertiary structure via heat denaturation"], answer: 0, exp: "Correct! Allostery involves a regulator binding at a distinct site, inducing a conformational change that affects activity at a distance." },
+  { q: "9. Which post-translational modification involves adding a lipid anchor to a protein to promote membrane association?", options: ["Glycosylation", "Lipidation (e.g., Myristoylation, Prenylation)", "Phosphorylation", "Ubiquitination"], answer: 1, exp: "Correct! Lipidation (such as myristoylation or prenylation) adds hydrophobic lipid anchors, helping recruit soluble proteins to membranes." },
+  { q: "10. Which enzyme family is responsible for transferring a phosphate group from ATP onto amino acid residues like Ser, Thr, or Tyr?", options: ["Phosphatases", "Kinases", "Signal peptidases", "Processing peptidases"], answer: 1, exp: "Correct! Kinases add phosphate groups from ATP, while phosphatases remove them, providing a major regulatory mechanism." },
+  { q: "11. What is the pathological consequence of the mutant protein progerin retaining a farnesyl lipid anchor in Hutchinson-Gilford progeria syndrome?", options: ["Uncontrolled kinase signaling in leukemia", "Nuclear envelope defects and nuclear distortion", "Complete loss of collagen triple-helix formation", "Impaired DNA repair via PARP inhibition"], answer: 1, exp: "Correct! Failure to remove the lipid anchor from lamin A (progerin) causes it to stay stuck at the nuclear membrane, distorting nuclear shape." },
+  { q: "12. How does lysine acetylation on histone tails generally affect chromatin accessibility and gene transcription?", options: ["It adds a strong negative charge, repressing transcription", "It removes positive charge, leading to open, accessible chromatin and gene activation", "It tags the histones for proteasomal degradation", "It converts lysine into citrulline for autoimmune recognition"], answer: 1, exp: "Correct! Acetylation neutralizes the positive charge of lysine, reducing histone-DNA binding affinity and opening up chromatin for transcription." },
+  { q: "13. What is the primary cellular fate directed by K48-linked polyubiquitin chains attached to a protein?", options: ["Membrane localization", "Targeting the protein to the proteasome for degradation", "Mitochondrial clearance via mitophagy", "Nuclear import via TIM23 complexes"], answer: 1, exp: "Correct! K48-linked ubiquitin chains serve as a primary degradation signal directing proteins to the proteasome." },
+  { q: "14. What is the role of an N-terminal signal peptide in secreted or membrane proteins?", options: ["It acts as an allosteric enzyme inhibitor", "It targets the nascent protein to the endoplasmic reticulum (ER)", "It stabilizes the collagen triple helix via hydroxylation", "It permanently cross-links adjacent β-strands"], answer: 1, exp: "Correct! N-terminal signal peptides are recognized by the Signal Recognition Particle (SRP) to target proteins to the ER during translation." },
+  { q: "15. Which vitamin acts as an essential cofactor for proline and lysine hydroxylases during collagen maturation?", options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin K"], answer: 1, exp: "Correct! Vitamin C is required for hydroxylation, which stabilizes the collagen triple helix; its deficiency causes scurvy." },
+  { q: "16. Vitamin K deficiency or treatment with warfarin can impair which post-translational modification required for blood clotting factors?", options: ["γ-Carboxylation of Glutamate (Glu) to Gla", "N-linked glycosylation in the ER", "Myristoylation of N-terminal glycine", "Citrullination of arginine residues"], answer: 0, exp: "Correct! Vitamin K supports γ-carboxylation of Glu residues into Gla, allowing calcium binding and membrane attachment in clotting factors." },
+  { q: "17. What does a lower equilibrium dissociation constant (Kd) indicate regarding drug-protein binding affinity?", options: ["Lower affinity and weaker binding", "Higher affinity and tighter binding", "Total denaturation of the protein pocket", "Complete inactivation of allosteric sites"], answer: 1, exp: "Correct! A lower Kd value signifies higher binding affinity, meaning less drug concentration is needed to form the protein-drug complex." },
+  { q: "18. In drug design, what potential risk is associated with adding a hydrophobic methyl group to fill an empty nonpolar cavity in a protein pocket?", options: ["It may completely disrupt aqueous solubility and membrane permeability parameters", "It automatically converts allosteric sites into active sites", "It forces the peptide backbone to undergo irreversible hydrolysis", "It guarantees 100% clinical efficacy regardless of Kd"], answer: 0, exp: "Correct! Altering lipophilicity must be carefully balanced; making a molecule too hydrophobic can ruin its aqueous solubility and drug-like properties." },
+  { q: "19. Which disease is clinically linked to autoantibodies targeting citrullinated proteins (where arginine is converted to citrulline)?", options: ["Chronic Myeloid Leukemia", "Rheumatoid Arthritis", "Neonatal Diabetes", "Hutchinson-Gilford Progeria"], answer: 1, exp: "Correct! Citrullination involves converting Arg to citrulline (losing a positive charge), and these modified proteins act as autoantigens in rheumatoid arthritis." },
+  { q: "20. Which statement correctly contrasts peptide bonds and hydrogen bonds in proteins?", options: ["Peptide bonds are weak noncovalent contacts, whereas hydrogen bonds are strong covalent bonds", "Peptide bonds are strong covalent bonds forming the backbone, whereas hydrogen bonds are weaker noncovalent contacts stabilizing folds", "Both are covalent bonds holding quaternary subunit interfaces together", "Neither bond is affected by extreme heat denaturation"], answer: 1, exp: "Correct! Peptide bonds are robust covalent linkages forming the permanent backbone, whereas hydrogen bonds are noncovalent contacts that stabilize secondary and tertiary structures." }
+];
+let current=0, score=0;
+const quizBody=document.getElementById(\'quizBody\');
+const progress=document.getElementById(\'progress\');
+const scoreBox=document.getElementById(\'scoreBox\');
+function renderQuestion(){
+  quizBody.innerHTML=\'\';
+  const q = questions[current];
+  const pct = ((current)/questions.length)*100;
+  progress.style.width = pct + \'%\';
+  const card = document.createElement(\'div\');
+  card.className=\'question-card active\';
+  card.innerHTML = `<div class="q-meta">Question ${current+1} of ${questions.length} | ${score} correct so far</div><div class="q-title">${q.q}</div><div class="options" id="options"></div><div class="explanation" id="exp"></div><button class="next-btn" id="nextBtn" onclick="nextQuestion()">${current===questions.length-1 ? \'See Results\' : \'Next Question →\'}</button>`;
+  quizBody.appendChild(card);
+  const optsDiv = card.querySelector(\'#options\');
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement(\'button\');
+    btn.className=\'option\';
+    btn.textContent = String.fromCharCode(65+i) + ". " + opt;
+    btn.onclick=()=>checkAnswer(i,btn);
+    optsDiv.appendChild(btn);
+  });
+}
+function checkAnswer(selected, btn){
+  const q = questions[current];
+  const allBtns = document.querySelectorAll(\'.option\');
+  const expDiv = document.getElementById(\'exp\');
+  const nextBtn = document.getElementById(\'nextBtn\');
+  allBtns.forEach(b=>b.disabled=true);
+  if(selected===q.answer){
+    btn.classList.add(\'correct\');
+    expDiv.className=\'explanation show correct-exp\';
+    expDiv.innerHTML = `✅ <b>Correct!</b> ${q.exp}`;
+    score++;
+  } else {
+    btn.classList.add(\'wrong\');
+    allBtns[q.answer].classList.add(\'correct\');
+    expDiv.className=\'explanation show wrong-exp\';
+    expDiv.innerHTML = `❌ <b>Wrong.</b> Correct answer is <b>${String.fromCharCode(65+q.answer)}</b>. ${q.exp}`;
+  }
+  nextBtn.style.display=\'block\';
+}
+function nextQuestion(){
+  current++;
+  if(current < questions.length){ renderQuestion(); } else { showScore(); }
+}
+function showScore(){
+  progress.style.width=\'100%\';
+  quizBody.style.display=\'none\';
+  scoreBox.style.display=\'block\';
+  const percent = Math.round((score/questions.length)*100);
+  let msg = percent>=80 ? "Outstanding! 🌟" : percent>=60 ? "Good job! 👍" : percent>=40 ? "Keep practicing! 📚" : "Review the slides focused! 💪";
+  scoreBox.innerHTML=`<div class="score-circle">${score}/${questions.length}</div><h2 style="margin:0;color:#1e293b;">${msg}</h2><p style="color:#64748b;">You scored ${percent}%</p><p style="font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:14px;border-radius:10px;"><b>Quick Review:</b><br>• <b>Protein Structure Levels:</b> Primary, secondary, tertiary, and quaternary.<br>• <b>Bond Stability:</b> Peptide/disulfide = covalent; H-bonds = noncovalent.<br>• <b>PTMs:</b> Phosphorylation, lipidation, glycosylation, ubiquitination tune function.<br>• <b>Maturation:</b> Vitamin C/K dependent steps vital for collagen/clotting.<br>• <b>Drug Design:</b> Lower Kd = tighter binding.</p><button class="btn-restart" onclick="restart()">Restart Quiz 🔄</button>`;
+}
+function restart(){ current=0; score=0; quizBody.style.display=\'block\'; scoreBox.style.display=\'none\'; renderQuestion(); }
+renderQuestion();
+</script>
+</body>
+</html>
